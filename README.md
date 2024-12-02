@@ -1,2 +1,1 @@
-# AOC2024
-Advent of Code 2024
+AOC 2024, not nice cood but fast-typing
