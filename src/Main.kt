@@ -13,6 +13,10 @@ fun main() {
             Day2()
         } else if (value == "3") {
             Day3()
+        } else if (value == "4") {
+            Day4()
+        } else if (value == "5") {
+            Day5()
         } else if (value == "x") {
             exitProcess(0)
         }
