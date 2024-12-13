@@ -1,64 +1,67 @@
-import com.google.ortools.linearsolver.MPSolver
-import com.google.ortools.linearsolver.MPSolver.ResultStatus
+import org.chocosolver.solver.Model
+import org.chocosolver.solver.variables.IntVar
+
 import java.io.File
 
 class Day13 {
     init {
 
-        val AValues = mutableListOf<Pair<Long,Long>>()
-        val BValues = mutableListOf<Pair<Long,Long>>()
-        val prizes = mutableListOf<Pair<Long,Long>>()
+        val AValues = mutableListOf<Pair<Int,Int>>()
+        val BValues = mutableListOf<Pair<Int,Int>>()
+        val prizes = mutableListOf<Pair<Int,Int>>()
 
         File("Day13.txt").useLines { lines ->
             lines.forEach { line ->
                 if(line.contains('A')) {
                     val values = line.split("A: ")[1].split(", ")
-                    AValues.add(values[0].replace("X+","").toLong() to values[1].replace("Y+","").toLong())
+                    AValues.add(values[0].replace("X+","").toInt() to values[1].replace("Y+","").toInt())
                 } else if (line.contains('B')) {
                     val values = line.split("B: ")[1].split(", ")
-                    BValues.add(values[0].replace("X+","").toLong() to values[1].replace("Y+","").toLong())
+                    BValues.add(values[0].replace("X+","").toInt() to values[1].replace("Y+","").toInt())
                 } else if (line.contains("Prize")) {
                     val prize = line.split("X=")[1].split(", ")
-                    prizes.add(prize[0].toLong() to prize[1].replace("Y=","").toLong())
+                    prizes.add(("10000000000000"+prize[0]).toInt() to ("10000000000000"+(prize[1].replace("Y=",""))).toInt())
                 }
             }
         }
-
-        MPSolver.createSolver("SCIP")?.let { solver ->
-            // 1. Definiera variabler
-            val a = solver.makeIntVar(0.0, Double.POSITIVE_INFINITY, "A")
-            val b = solver.makeIntVar(0.0, Double.POSITIVE_INFINITY, "B")
-
-            // 2. Lägg till restriktioner
-            // 94A + 34B = 8400
-            solver.makeConstraint(8400.0, 8400.0).apply {
-                setCoefficient(a, 94.0)
-                setCoefficient(b, 34.0)
+        var index = 0
+        var sum = 0
+        while(index < prizes.size) {
+            val tempCost = lPSolve(AValues[index], BValues[index], prizes[index])
+            if(tempCost != -1) {
+                sum += tempCost
             }
+            index++
+        }
+        println(sum)
+    }
 
-            // 22A + 67B = 5400
-            solver.makeConstraint(5400.0, 5400.0).apply {
-                setCoefficient(a, 22.0)
-                setCoefficient(b, 67.0)
-            }
+    private fun lPSolve(Avalues : Pair<Int,Int>, BValues : Pair<Int,Int>, target: Pair<Int,Int>) : Int {
+        val model = Model("LP SOLVER")
 
-            // 3. Definiera målfunktionen: Minimize Cost = 3A + B
-            val objective = solver.objective()
-            objective.setCoefficient(a, 3.0)
-            objective.setCoefficient(b, 1.0)
-            objective.setMinimization()
+        // Variabler
+        val A: IntVar = model.intVar("A", 0, 1000) // Begränsning av domän
+        val B: IntVar = model.intVar("B", 0, 1000)
 
-            // 4. Lös problemet
-            val resultStatus = solver.solve()
-            if (resultStatus == ResultStatus.OPTIMAL) {
-                println("Optimal lösning hittad:")
-                println("A = ${a.solutionValue().toInt()}")
-                println("B = ${b.solutionValue().toInt()}")
-                println("Minimikostnad = ${objective.value()}")
-            } else {
-                println("Ingen lösning hittades.")
-            }
-        } ?: println("Kunde inte skapa solver.")
+        // Restriktioner
+        // 94A + 22B = 8400
+        model.scalar(arrayOf(A, B), intArrayOf(Avalues.first, BValues.first), "=", target.first).post()
 
+        // 34A + 67B = 5400
+        model.scalar(arrayOf(A, B), intArrayOf(Avalues.second, BValues.second), "=", target.second).post()
+
+        // Målfunktion: Minimize Cost = 3A + B
+        val maxCost = 3 * 1000 + 1000 // Maxvärde baserat på A och B
+        val cost = model.intVar("Cost", 0, maxCost) // Begränsad domän
+        model.scalar(arrayOf(A, B), intArrayOf(3, 1), "=", cost).post()
+        model.setObjective(Model.MINIMIZE, cost)
+
+        // Lös problemet
+        val solver = model.solver
+        if (solver.solve()) {
+            return cost.value
+        } else {
+            return -1
+        }
     }
 }
