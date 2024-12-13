@@ -25,9 +25,17 @@ fun main() {
             Day8()
         } else if (value == "9") {
             Day9()
-        }else if (value == "x") {
-            exitProcess(0)
-        }
+        } else if (value == "10") {
+            Day10()
+        } else if (value == "11") {
+            Day11()
+        } else if (value == "12") {
+            Day12()
+        } else if (value == "13") {
+            Day13()
+        } else if (value == "x") {
+        exitProcess(0)
     }
+}
 }
 

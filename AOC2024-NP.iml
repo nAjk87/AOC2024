@@ -11,5 +11,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
+    <orderEntry type="library" name="or-tools_arm64_macOS-13.5_java_v9.7" level="project" />
+    <orderEntry type="library" name="google.protobuf.java" level="project" />
   </component>
 </module>
