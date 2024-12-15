@@ -33,6 +33,8 @@ fun main() {
             Day12()
         } else if (value == "13") {
             Day13()
+        } else if (value == "14") {
+            Day14()
         } else if (value == "x") {
         exitProcess(0)
     }
